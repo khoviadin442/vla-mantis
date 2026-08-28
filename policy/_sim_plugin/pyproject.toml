@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "lerobot_robot_mantis_sim"
+version = "0.1.0"
+description = "Throwaway: MantisFollower's feature contract without ROS, to test the async-inference loop"
+requires-python = ">=3.10"
+dependencies = []
+[tool.setuptools]
+packages = ["lerobot_robot_mantis_sim"]
