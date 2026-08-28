@@ -117,11 +117,13 @@ cd ~/prl_ur5_ros2/docker-ros2
 python3 -c "import pinocchio, pink, qpsolvers, lerobot; print('teleop stack OK')"
 
 cd ~/share/mantis_ws && colcon build --symlink-install
-pip install -e ~/share/lerobot_robot_mantis        # only needed for replay
+
+# only needed for replay and the policy path; --break-system-packages is the PEP 668 guard
+python3 -m pip install --user --break-system-packages -e ~/share/lerobot_robot_mantis
 ```
 
-If that import line raises `No module named ...` (or the next one says `pip: command not
-found`), the container is running the unpatched image — see
+If that import line raises `No module named ...` (or the pip line below it answers `No module
+named pip`), the container is running the unpatched image — see
 [troubleshooting.md](troubleshooting.md#the-container-has-no-pip-pinocchio-or-lerobot).
 
 ### 5. Finish the setup (second pass)
@@ -335,7 +337,9 @@ Notes:
 ## Replay
 
 ```bash
-pip install -e lerobot_robot_mantis      # once, in the container
+# once per container - --rm destroys the install, the share dir keeps the sources
+python3 -m pip install --user --break-system-packages -e ~/share/lerobot_robot_mantis
+
 ./run_replay.sh 0                        # episode 0
 ./run_replay.sh 3 my_task                # episode 3 of the RECORD_NAME=my_task dataset
 ```

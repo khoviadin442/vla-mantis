@@ -70,7 +70,7 @@ cd ~/vla-mantis && ./setup_workstation.sh
 # 3. build image + workspace  (add --rebuild if a prl_ros2 image predates the patch)
 cd ~/prl_ur5_ros2/docker-ros2 && ./start_docker.bash mantis ~/teleop_share
 #   inside: cd ~/share/mantis_ws && colcon build --symlink-install
-#           pip install -e ~/share/lerobot_robot_mantis
+#           python3 -m pip install --user --break-system-packages -e ~/share/lerobot_robot_mantis
 
 # 4. second pass, now that the container packages exist — writes mantis.urdf
 cd ~/vla-mantis && ./setup_workstation.sh
@@ -167,10 +167,10 @@ what actually exists. If you add a module the teleop imports, add it to the copy
 
 ### The editable install does not survive the container
 
-The container runs `--rm`, so `pip install -e ~/share/lerobot_robot_mantis` has to be
-repeated in each new container that runs replay or policy. It shows up as
-`ModuleNotFoundError: lerobot_robot_mantis`; `run_policy.sh` checks for it and prints the
-line to run.
+The container runs `--rm`, so `python3 -m pip install --user --break-system-packages -e
+~/share/lerobot_robot_mantis` has to be repeated in each new container that runs replay or
+policy. It shows up as `ModuleNotFoundError: lerobot_robot_mantis`; `run_policy.sh` checks
+for it and prints the line to run.
 
 ## Porting to another arm
 
