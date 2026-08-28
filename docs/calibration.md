@@ -21,9 +21,48 @@ Every dataset written by `lerobot_recorder.py` carries the calibration it was re
 | `meta/intrinsics.json` | latched from the live `camera_info` topics — fx, fy, cx, cy per stream |
 | `meta/extrinsics.json` | the fixed-cameras calibration file, one pose per camera |
 
+The calibration file is
+`mantis_ws/src/prl_ur5_robot_configuration/config/fixed_cameras/dataset_collection.yaml`,
+shipped in `patches/` and applied by `setup_workstation.sh`. **It holds this bench's measured
+camera poses.** If you move a camera, or set the stack up on a different bench, recalibrate
+and update that file — otherwise every dataset you record is confidently, consistently wrong,
+and the check below is what tells you.
+
 Depth is registered to its colour frame, so it shares that camera's intrinsics and pose.
 This is what makes the check below possible after the fact, off a recorded dataset, with the
 robot switched off.
+
+## Prerequisite: open3d
+
+`check_calibration.py` and `view_pointclouds.py` need **open3d**, which the container image
+does **not** ship. `make_pointclouds.py` does not — it writes PLY by hand — so you can build
+the clouds without it and only hit this at the analysis step.
+
+Install it into a vendored prefix in the share dir, once:
+
+```bash
+docker exec -it mantis bash          # enter the container
+  python3 -m pip install --target ~/share/o3d_libs open3d==0.19.0
+```
+
+`--target` rather than a normal install because it is large (~1.7 GB with dependencies) and
+belongs in the bind-mounted share dir, where it survives the `--rm` container instead of
+being rebuilt every time. `view_pointclouds.py` falls back to that prefix automatically:
+
+```python
+try:
+    import open3d as o3d
+except ModuleNotFoundError:
+    sys.path.insert(0, str(SHARE / "o3d_libs"))
+    import open3d as o3d
+```
+
+`check_calibration.py` imports it plainly, with no such fallback, so it needs open3d on the
+normal import path — run it from a shell where `~/share/o3d_libs` is on `PYTHONPATH`:
+
+```bash
+PYTHONPATH=~/share/o3d_libs python3 ~/share/check_calibration.py <dataset-name>
+```
 
 ## The check
 
@@ -32,7 +71,7 @@ docker exec -it mantis bash          # enter the container
 
 # then, inside it — on a recorded dataset
   python3 ~/share/make_pointclouds.py  <dataset-name> [n_frames]   # default 4 frames
-  python3 ~/share/check_calibration.py <dataset-name>
+  PYTHONPATH=~/share/o3d_libs python3 ~/share/check_calibration.py <dataset-name>
 ```
 
 Everything on this page runs inside the container, from that shell.

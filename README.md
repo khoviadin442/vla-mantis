@@ -80,6 +80,10 @@ cd ~/vla-mantis && ./setup_workstation.sh
 insist), and every path is overridable: `SHARE_DIR`, `HOST_DEPS`, `CONTAINER_NAME`,
 `ROS_SETUP`.
 
+The calibration tools additionally need open3d, which the image does not ship — see
+[docs/calibration.md](docs/calibration.md#prerequisite-open3d). Nothing else does, so skip it
+until you need it.
+
 ## Teleoperate and record
 
 Get a shell in the container first, then launch from inside it. An interactive shell sources

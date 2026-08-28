@@ -1,0 +1,49 @@
+- type: 'femto-mega'
+  name_prefix: echo
+  bounding_box: &orbbec_size
+    width: 0.40
+    height: 0.35
+  pose:
+    x: 0.174480
+    y: 0.624294
+    z: 0.711701
+    roll:  -2.508
+    pitch: 0.060
+    yaw:   2.469
+  fixture_orientation: "+y"
+  offset: # From fixture tip to camera optical frame offset
+    x: 0.00
+    y: 0.00
+    z: 0.00
+
+- type: 'femto-mega'
+  name_prefix: foxtrot
+  bounding_box: *orbbec_size
+  pose:
+    x: -0.622072
+    y: 0.591614
+    z: 0.735739
+    roll:  -2.419
+    pitch: -0.030
+    yaw:   -2.493
+  fixture_orientation: "+y"
+  offset: # From fixture tip to camera optical frame offset
+    x: 0.00
+    y: 0.00
+    z: 0.00
+
+- type: 'femto-mega'
+  name_prefix: golf
+  bounding_box: *orbbec_size
+  pose:
+    x: -0.220848
+    y: -0.621937
+    z: 0.688742
+    roll:  -2.552
+    pitch: 0.000
+    yaw:   -0.015
+  fixture_orientation: "-y"
+  offset: # From fixture tip to camera optical frame offset
+    x: 0.00
+    y: 0.00
+    z: 0.00

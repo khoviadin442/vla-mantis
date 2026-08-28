@@ -5,5 +5,5 @@ protocol: "tcp"
 local_port: 1501
 rate: 100.0
 grasping_force: 30.0
-speed: 50.0
+speed: 150.0
 finger_sensors: "false"
