@@ -19,7 +19,8 @@ the top — a failure at step 1 makes every measurement below it meaningless.
 ## `check_robot.sh` — is the arm listening?
 
 ```bash
-docker exec -it mantis ~/share/check_robot.sh     # WHILE the robot stack is up
+docker exec -it mantis bash          # enter the container
+  ~/share/check_robot.sh             # then, inside it — WHILE the robot stack is up
 ```
 
 The distinction it draws is the one that wastes the most time: an arm that publishes

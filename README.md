@@ -82,11 +82,19 @@ insist), and every path is overridable: `SHARE_DIR`, `HOST_DEPS`, `CONTAINER_NAM
 
 ## Teleoperate and record
 
+Get a shell in the container first, then launch from inside it. An interactive shell sources
+`.bashrc`, which is where the three ROS prefixes get sourced; a one-shot
+`docker exec -it mantis <script>` skips `.bashrc` and can leave `AMENT_PREFIX_PATH` short, so
+`package://` mesh lookups fail.
+
 ```bash
 # terminal 1 — robot stack (container)
-# terminal 2 — teleop bridge (container)
-docker exec -it mantis ~/share/run_teleop_mantis.sh
-# terminal 3 — controller publisher (host)
+
+# terminal 2 — teleop bridge
+docker exec -it mantis bash          # enter the container
+  ~/share/run_teleop_mantis.sh       # then, inside it
+
+# terminal 3 — controller publisher (host, not the container)
 ~/teleop_share/run_quest_pub.sh
 ```
 
@@ -100,11 +108,14 @@ Bring it up one component at a time — the ladder in
 cause. The last two rungs:
 
 ```bash
-# read-only: one observation, prints the returned chunk, creates no publisher
-PROBE=1 ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
+docker exec -it mantis bash          # enter the container
+
+# then, inside it — read-only: one observation, prints the returned chunk,
+# creates no publisher, so the arm cannot move
+  PROBE=1 ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
 
 # the real thing (safety_filter_controller must be loaded and active)
-docker exec -it mantis ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
+  ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
 ```
 
 Switching the arm from the teleop controller to the safety filter is a manual, two-command

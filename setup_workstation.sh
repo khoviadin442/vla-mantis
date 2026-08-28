@@ -177,5 +177,6 @@ echo "       cd ~/prl_ur5_ros2/docker-ros2 && ./start_docker.bash $CONTAINER $SH
 echo "  2. inside it:  cd ~/share/mantis_ws && colcon build --symlink-install"
 echo "                 pip install -e ~/share/lerobot_robot_mantis"
 echo "  3. on the host: $SHARE/run_quest_pub.sh --scan"
-echo "  4. policy path only: load+activate safety_filter_controller, then"
-echo "                 docker exec -it $CONTAINER ~/share/policy/run_policy.sh --help"
+echo "  4. policy path only: docker exec -it $CONTAINER bash"
+echo "                 then inside: load+activate safety_filter_controller, and"
+echo "                 ~/share/policy/run_policy.sh --help"

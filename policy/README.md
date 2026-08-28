@@ -19,8 +19,13 @@ run_policy.sh  ->  robot_client_cpu.py  ->  gRPC 127.0.0.1:8080  ->  policy serv
 ## Run it
 
 ```bash
-docker exec -it mantis ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
+docker exec -it mantis bash          # enter the container
+  ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
 ```
+
+Enter the container and run from inside it, rather than passing the script to
+`docker exec` in one shot: an interactive shell sources `.bashrc` and with it the three ROS
+prefixes, which a one-shot exec does not get.
 
 Read-only dry run first — one observation, prints the returned chunk, creates no publisher
 so the arm cannot move:

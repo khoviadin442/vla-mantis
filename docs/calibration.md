@@ -28,10 +28,14 @@ robot switched off.
 ## The check
 
 ```bash
-# inside the container, on a recorded dataset
-python3 ~/share/make_pointclouds.py  <dataset-name> [n_frames]   # default 4 frames
-python3 ~/share/check_calibration.py <dataset-name>
+docker exec -it mantis bash          # enter the container
+
+# then, inside it — on a recorded dataset
+  python3 ~/share/make_pointclouds.py  <dataset-name> [n_frames]   # default 4 frames
+  python3 ~/share/check_calibration.py <dataset-name>
 ```
+
+Everything on this page runs inside the container, from that shell.
 
 `make_pointclouds.py` unprojects each camera's depth with its intrinsics, moves the points
 into the robot base frame with its pose, and writes one PLY per frame plus per-camera PLYs
