@@ -62,20 +62,53 @@ Each step adds one real component, so a failure names its own cause:
    deserialize here. Still cannot move the arm.
 5. `run_policy.sh` — the real thing.
 
-## What is NOT in this folder
+## What is NOT in this folder: the robot plugin
 
-`../lerobot_robot_mantis/` — the `mantis_follower` robot plugin. It is the ROS2 driver
-lerobot talks to, and `../run_replay.sh` uses it as well, so it is a peer of this folder
-rather than part of it. It must be installed for anything here except the probe and the
-smoketest to run:
+`../lerobot_robot_mantis/` is the `mantis_follower` plugin — the piece that actually talks to
+the arm. lerobot does not know what a UR5 is; it loads a *robot plugin* that exposes two
+things, "give me an observation" and "execute this action", and drives the ROS 2 topics
+behind them. Every client here goes through it.
+
+It sits one level up rather than inside `policy/` because `../run_replay.sh` uses it too. It
+is a peer of this folder, not part of it.
+
+### Why a pip install at all
+
+lerobot finds the plugin by **importing it by name** (`import lerobot_robot_mantis`), not by
+file path. A folder sitting in the share dir is invisible to Python until something puts it
+on the import path. That is all the install does — it registers the package with the
+container's Python.
+
+Run it **inside the container**, once per container:
 
 ```bash
 python3 -m pip install --user --break-system-packages -e ~/share/lerobot_robot_mantis
 ```
 
-Editable, so edits under `docker_shared` need no reinstall — but a **recreated container
-loses it**, which shows up as `ModuleNotFoundError: lerobot_robot_mantis`. `run_policy.sh`
-checks for this and prints the line above.
+| Flag | Why |
+|---|---|
+| `-e` | *Editable.* Installs a pointer to `~/share/lerobot_robot_mantis`, not a copy. Edit `mantis_follower.py` on the host and the next run picks it up — no reinstall. |
+| `--user` | Installs into your home instead of the system Python. No root needed. |
+| `--break-system-packages` | The container's Python is externally managed (PEP 668), so pip refuses to touch it without this. It sounds alarming; it only means "yes, I know this is a distro Python". |
+
+### It does not survive the container
+
+`start_docker.bash` runs the container with `--rm`, so the container filesystem — including
+this install — is destroyed on exit. The share dir is a bind mount and survives; the
+installed *pointer* to it does not. **Every new container needs the line above again.**
+
+The symptom is:
+
+```
+ModuleNotFoundError: No module named 'lerobot_robot_mantis'
+```
+
+`run_policy.sh` checks for this before doing anything else and prints the exact command, so
+you do not have to remember it.
+
+Two things here do **not** need the plugin, which is why they are the first rungs of the
+bring-up ladder: `probe_policy_server.py` only subscribes to topics, and
+`dummy_policy_server_smoketest.py` speaks the wire protocol with no robot at all.
 
 ## Controller
 
@@ -86,6 +119,45 @@ last safe command instead of following a bad one. It is a **terminal** controlle
 replaces `forward_position_controller` rather than sitting in front of it, so exactly one of
 the two may be active. Loading and activating it is a manual step; `run_policy.sh` only
 checks and refuses to run blind.
+
+### Switching to it
+
+Run both, in this order, inside the container with the robot stack up:
+
+```bash
+# 1. load and configure the controller, but leave it stopped
+ros2 run controller_manager spawner safety_filter_controller \
+    -p ~/share/mantis_ws/src/safety_filter_controller/config/safety_filter_controller.yaml \
+    --inactive
+
+# 2. swap it in for the teleop controller, atomically
+ros2 control switch_controllers \
+    --deactivate forward_position_controller \
+    --activate safety_filter_controller
+```
+
+The order matters. The spawner only *loads* the controller — `--inactive` means it is
+configured and ready but not driving anything, which is what you want while
+`forward_position_controller` still holds the arm. `switch_controllers` then does the
+handover in a single call, so the arm is never left with no controller or with two of them
+fighting over the same joints.
+
+Confirm before you run a policy — exactly one of the two should read `active`:
+
+```bash
+ros2 control list_controllers
+```
+
+To go back to teleop afterwards, reverse the switch:
+
+```bash
+ros2 control switch_controllers \
+    --deactivate safety_filter_controller \
+    --activate forward_position_controller
+```
+
+The spawner step is not needed again for the rest of the container's life: once loaded, the
+controller stays loaded and you only switch between the two.
 
 `config_teleop_mantis.yaml`'s `safety_filter_joints` must equal that controller's
 `joints.active_joint`, in the same order — the `Float64MultiArray` is indexed positionally,

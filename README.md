@@ -107,6 +107,10 @@ PROBE=1 ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
 docker exec -it mantis ~/share/policy/run_policy.sh "Grab green cube and place it in the box"
 ```
 
+Switching the arm from the teleop controller to the safety filter is a manual, two-command
+step — `run_policy.sh` checks it and refuses to run blind rather than doing it for you. The
+commands are in [policy/README.md](policy/README.md#switching-to-it).
+
 Defaults: `pi0`, 15 fps, chunks of 50 aggregated by weighted average, both colour cameras,
 safety filter on, server at `127.0.0.1:8080`. All overridable from the environment.
 
