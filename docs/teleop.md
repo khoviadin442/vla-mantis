@@ -101,15 +101,28 @@ cd ~/vla-mantis
 
 ### 4. Build the image and the workspace
 
+`start_docker.bash` builds the image only when `prl_ros2:$(id -un)` does not exist yet. An
+image left over from an earlier `prl_ur5_ros2` setup — one built before the patch in step 2 —
+is reused as it is, and the teleop stack never gets installed. Rebuild in that case:
+
 ```bash
+# an image already? then the run below needs --rebuild (it rebuilds with --no-cache)
+docker image inspect prl_ros2:$(id -un) > /dev/null 2>&1 && echo "exists - add --rebuild"
+
 # first build is ~30 min: torch + lerobot are several GB
 cd ~/prl_ur5_ros2/docker-ros2
-./start_docker.bash mantis ~/teleop_share
+./start_docker.bash mantis ~/teleop_share          # ... --rebuild, if the check above said so
 
-# inside the container:
+# inside the container — is this the patched image?
+python3 -c "import pinocchio, pink, qpsolvers, lerobot; print('teleop stack OK')"
+
 cd ~/share/mantis_ws && colcon build --symlink-install
 pip install -e ~/share/lerobot_robot_mantis        # only needed for replay
 ```
+
+If that import line raises `No module named ...` (or the next one says `pip: command not
+found`), the container is running the unpatched image — see
+[troubleshooting.md](troubleshooting.md#the-container-has-no-pip-pinocchio-or-lerobot).
 
 ### 5. Finish the setup (second pass)
 

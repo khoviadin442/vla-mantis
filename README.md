@@ -67,7 +67,7 @@ cp ~/vla-mantis/patches/prl_ur5_ros2/docker-ros2/* ~/prl_ur5_ros2/docker-ros2/
 # 2. lay out the share dir, clone + patch the ROS workspace, build the host prefix
 cd ~/vla-mantis && ./setup_workstation.sh
 
-# 3. build image + workspace
+# 3. build image + workspace  (add --rebuild if a prl_ros2 image predates the patch)
 cd ~/prl_ur5_ros2/docker-ros2 && ./start_docker.bash mantis ~/teleop_share
 #   inside: cd ~/share/mantis_ws && colcon build --symlink-install
 #           pip install -e ~/share/lerobot_robot_mantis
